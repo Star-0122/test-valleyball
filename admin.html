@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>管理者ページ｜善通寺市ジュニアバレーボールクラブ</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#121212; --white:#FAFAF8; --line:#e2ded6;
+  --red:#E12420; --orange:#FF7A1A; --gray:#6b6b68; --bg:#f4f3f0;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--black);line-height:1.7;}
+h1,h2,h3,p{margin:0;}
+button{font-family:inherit;cursor:pointer;}
+input,textarea,select{font-family:inherit;font-size:14px;padding:9px 10px;border:1px solid var(--line);border-radius:3px;width:100%;background:#fff;}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--orange);outline-offset:1px;}
+
+/* ---- ログイン画面 ---- */
+.login-screen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:linear-gradient(160deg,#121212,#2a1210);
+}
+.login-box{
+  background:#fff;padding:44px 36px;max-width:380px;width:100%;border-radius:6px;
+  box-shadow:0 20px 50px rgba(0,0,0,.35);
+}
+.login-box h1{font-size:19px;font-weight:900;margin-bottom:6px;}
+.login-box p.sub{color:var(--gray);font-size:13px;margin-bottom:24px;}
+.login-box label{display:block;font-size:13px;font-weight:700;margin-bottom:8px;}
+.login-error{color:var(--red);font-size:13px;margin-top:10px;min-height:18px;}
+.login-btn{
+  margin-top:18px;width:100%;padding:13px;border:none;border-radius:3px;
+  background:linear-gradient(100deg,var(--red),var(--orange));color:#fff;font-weight:700;font-size:15px;
+}
+.login-note{
+  margin-top:22px;font-size:12px;color:var(--gray);background:#f7f6f3;padding:12px 14px;border-left:3px solid var(--orange);
+}
+
+/* ---- 管理画面 ---- */
+.admin-app{display:none;}
+.admin-app.is-active{display:block;}
+.admin-header{
+  position:sticky;top:0;z-index:10;background:var(--black);color:#fff;
+  padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+}
+.admin-header h1{font-size:15px;font-weight:700;}
+.admin-header .actions{display:flex;gap:8px;flex-wrap:wrap;}
+.btn{
+  padding:9px 16px;border-radius:3px;border:1px solid transparent;font-size:13px;font-weight:700;
+}
+.btn-primary{background:linear-gradient(100deg,var(--red),var(--orange));color:#fff;}
+.btn-outline{background:transparent;border-color:rgba(255,255,255,.4);color:#fff;}
+.btn-dark{background:#fff;color:var(--black);}
+.save-indicator{font-size:12px;color:#c9c5be;}
+
+.admin-body{display:flex;max-width:1200px;margin:0 auto;min-height:calc(100vh - 60px);}
+.admin-nav{
+  width:200px;flex:none;padding:24px 12px;border-right:1px solid var(--line);
+}
+.admin-nav button{
+  display:block;width:100%;text-align:left;padding:10px 12px;margin-bottom:4px;
+  background:transparent;border:none;border-radius:3px;font-size:14px;font-weight:500;color:var(--black);
+}
+.admin-nav button.is-active{background:var(--black);color:#fff;font-weight:700;}
+.admin-main{flex:1;padding:28px 30px;min-width:0;}
+.admin-panel{display:none;}
+.admin-panel.is-active{display:block;}
+.admin-panel h2{font-size:20px;font-weight:900;margin-bottom:6px;}
+.admin-panel .desc{color:var(--gray);font-size:13px;margin-bottom:22px;}
+
+.config-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media (max-width:700px){ .config-grid{grid-template-columns:1fr;} }
+.field{margin-bottom:0;}
+.field span{display:block;font-size:12.5px;font-weight:700;margin-bottom:6px;color:#3a3a38;}
+
+.admin-item-card{
+  background:#fff;border:1px solid var(--line);border-radius:5px;padding:16px 18px;margin-bottom:14px;
+}
+.admin-item-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.admin-item-head .idx{font-weight:900;color:var(--orange);font-size:13px;margin-right:auto;}
+.admin-item-head button{
+  width:30px;height:30px;border:1px solid var(--line);background:#fff;border-radius:3px;font-size:13px;
+}
+.admin-item-head .del{border-color:#f0c9c6;color:var(--red);}
+.admin-fields{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+@media (max-width:700px){ .admin-fields{grid-template-columns:1fr;} }
+.admin-fields .full{grid-column:1/-1;}
+
+.add-btn{
+  margin-bottom:16px;padding:10px 18px;border:1px dashed var(--gray);background:transparent;border-radius:4px;font-size:13px;font-weight:700;color:var(--black);
+}
+
+.album-card{background:#fff;border:1px solid var(--line);border-radius:5px;padding:16px 18px;margin-bottom:14px;}
+.album-name-row{display:flex;gap:10px;align-items:center;margin-bottom:10px;}
+.album-name-row input{font-weight:700;}
+
+details.advanced{margin-top:30px;background:#fff;border:1px solid var(--line);border-radius:5px;padding:14px 18px;}
+details.advanced summary{cursor:pointer;font-weight:700;font-size:13px;}
+details.advanced textarea{margin-top:10px;height:140px;font-family:monospace;font-size:12px;}
+
+.output-box{margin-top:10px;}
+.output-box textarea{height:340px;font-family:monospace;font-size:12px;}
+.hint{font-size:12px;color:var(--gray);margin-top:8px;}
+.hint strong{color:var(--black);}
+</style>
+</head>
+<body>
+
+<!-- =========================================================
+     ログイン画面
+     ========================================================= -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <h1>管理者ページ</h1>
+    <p class="sub">善通寺市ジュニアバレーボールクラブ 公式サイト</p>
+    <label for="pwInput">パスワード</label>
+    <input type="password" id="pwInput" autocomplete="off">
+    <button class="login-btn" id="loginBtn">ログイン</button>
+    <p class="login-error" id="loginError"></p>
+    <p class="login-note">
+      このパスワードは「関係者以外がうっかり編集画面を開かない」ための簡易的なものです。ここで編集した内容が実際のサイトに反映されるのは、書き出したファイルをご自身でGitHubにアップロードした時だけです。第三者がこの画面を開けても、実際のサイトを書き換えることはできません。
+    </p>
+  </div>
+</div>
+
+<!-- =========================================================
+     管理画面本体
+     ========================================================= -->
+<div class="admin-app" id="adminApp">
+  <div class="admin-header">
+    <h1>善通寺ジュニアバレー 管理者ページ</h1>
+    <div class="actions">
+      <span class="save-indicator" id="saveIndicator">下書き自動保存 済み</span>
+      <button class="btn btn-outline" id="resetDraftBtn">下書きを破棄</button>
+      <button class="btn btn-dark" id="copyBtn">コードをコピー</button>
+      <button class="btn btn-primary" id="downloadBtn">data.js をダウンロード</button>
+      <button class="btn btn-outline" id="logoutBtn">ログアウト</button>
+    </div>
+  </div>
+
+  <div class="admin-body">
+    <nav class="admin-nav" id="adminNav">
+      <button data-panel="guide" class="is-active">はじめに</button>
+      <button data-panel="config">基本設定・リンク</button>
+      <button data-panel="news">お知らせ</button>
+      <button data-panel="schedule">活動予定</button>
+      <button data-panel="match">大会・試合結果</button>
+      <button data-panel="member">選手紹介</button>
+      <button data-panel="gallery">活動写真</button>
+      <button data-panel="features">チームの特徴</button>
+    </nav>
+
+    <main class="admin-main">
+
+      <section class="admin-panel is-active" data-panel="guide">
+        <h2>はじめに</h2>
+        <p class="desc">更新の流れは次の3ステップです。</p>
+        <ol style="padding-left:20px;font-size:14px;line-height:2;">
+          <li>左のメニューから編集したい項目を選び、内容を書き換える（自動で下書き保存されます）</li>
+          <li>右上の「data.js をダウンロード」を押す</li>
+          <li>ダウンロードした <code>data.js</code> を、GitHubリポジトリの <code>data.js</code> に上書きアップロードする（Add file → Upload files）</li>
+        </ol>
+        <p class="hint">数分後、公開サイトに反映されます。「コードをコピー」を使えば、GitHub上でファイルを直接編集（鉛筆アイコン）して貼り付けることもできます。</p>
+      </section>
+
+      <section class="admin-panel" data-panel="config">
+        <h2>基本設定・リンク</h2>
+        <p class="desc">Instagram・Googleマップ・申込フォームなどのリンク先や、活動場所の情報です。</p>
+        <div class="config-grid" id="configForm"></div>
+      </section>
+
+      <section class="admin-panel" data-panel="news">
+        <h2>お知らせ</h2>
+        <p class="desc">トップページには最新3件、「すべてのお知らせを見る」で全件が表示されます。上にあるものほど新しく表示されます。</p>
+        <button class="add-btn" id="newsAddBtn">＋ お知らせを追加</button>
+        <div id="newsList"></div>
+        <details class="advanced">
+          <summary>カテゴリーの色を編集（上級者向け）</summary>
+          <textarea id="newsCatsJson"></textarea>
+          <p class="hint">JSON形式です。壊れると保存されません。分からない場合は触らないでください。</p>
+        </details>
+      </section>
+
+      <section class="admin-panel" data-panel="schedule">
+        <h2>活動予定</h2>
+        <p class="desc">日付が近い順に並べておくと見やすくなります。</p>
+        <button class="add-btn" id="scheduleAddBtn">＋ 予定を追加</button>
+        <div id="scheduleList"></div>
+        <details class="advanced">
+          <summary>予定の種類（色・アイコン）を編集（上級者向け）</summary>
+          <textarea id="scheduleTypesJson"></textarea>
+        </details>
+      </section>
+
+      <section class="admin-panel" data-panel="match">
+        <h2>大会・試合結果</h2>
+        <p class="desc">「試合の内訳」は1行につき「ラウンド / 対戦相手 / スコア」の形式で入力してください（例：予選 / ○○ジュニア / 2 - 0）。</p>
+        <button class="add-btn" id="matchAddBtn">＋ 大会を追加</button>
+        <div id="matchList"></div>
+      </section>
+
+      <section class="admin-panel" data-panel="member">
+        <h2>選手紹介</h2>
+        <p class="desc">「公開する」にチェックを入れた選手だけがサイトに表示されます。保護者の同意が取れている選手のみ公開してください。</p>
+        <button class="add-btn" id="memberAddBtn">＋ 選手を追加</button>
+        <div id="memberList"></div>
+      </section>
+
+      <section class="admin-panel" data-panel="gallery">
+        <h2>活動写真</h2>
+        <p class="desc">アルバムごとに、画像のURLを1行に1つずつ入力してください。写真をお持ちでない場合は空欄のままで構いません。</p>
+        <button class="add-btn" id="albumAddBtn">＋ アルバムを追加</button>
+        <div id="albumList"></div>
+      </section>
+
+      <section class="admin-panel" data-panel="features">
+        <h2>チームの特徴</h2>
+        <p class="desc">トップページ「善通寺ジュニアバレーの特徴」に表示されるカードです。</p>
+        <button class="add-btn" id="featureAddBtn">＋ カードを追加</button>
+        <div id="featureList"></div>
+      </section>
+
+      <div class="output-box" style="margin-top:36px;">
+        <h2 style="font-size:15px;">生成されたコード（プレビュー）</h2>
+        <textarea id="outputCode" readonly></textarea>
+        <p class="hint">これが <strong>data.js</strong> の中身です。ダウンロード、またはこのままコピーしてお使いください。</p>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+/* =========================================================
+   0. パスワード認証
+   ========================================================= */
+// デフォルトパスワード: volley2026
+// パスワードを変更したい場合は、新しいパスワードのSHA-256ハッシュを計算し、
+// 下の ADMIN_PASSWORD_HASH を書き換えてください（このファイル内、他には保存されません）。
+const ADMIN_PASSWORD_HASH = "b256cbf46e1aac221f5f4b6d91ec3cea9b657c86b9d6801be7ab1a9e5bc67212";
+
+async function sha256Hex(text){
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,"0")).join("");
+}
+
+const loginScreen = document.getElementById("loginScreen");
+const adminApp = document.getElementById("adminApp");
+const pwInput = document.getElementById("pwInput");
+const loginError = document.getElementById("loginError");
+
+async function tryLogin(){
+  const hash = await sha256Hex(pwInput.value);
+  if(hash === ADMIN_PASSWORD_HASH){
+    sessionStorage.setItem("zjv_admin_ok","1");
+    loginScreen.style.display = "none";
+    adminApp.classList.add("is-active");
+    initAdmin();
+  } else {
+    loginError.textContent = "パスワードが違います。";
+  }
+}
+document.getElementById("loginBtn").addEventListener("click", tryLogin);
+pwInput.addEventListener("keydown", (e)=>{ if(e.key==="Enter") tryLogin(); });
+document.getElementById("logoutBtn")?.addEventListener("click", ()=>{
+  sessionStorage.removeItem("zjv_admin_ok");
+  location.reload();
+});
+
+if(sessionStorage.getItem("zjv_admin_ok") === "1"){
+  loginScreen.style.display = "none";
+  adminApp.classList.add("is-active");
+  initAdmin();
+}
+
+/* =========================================================
+   1. 状態管理（下書きはlocalStorageに保存）
+   ========================================================= */
+const DRAFT_KEY = "zjv_admin_draft_v1";
+let state = null;
+
+function loadState(){
+  const saved = localStorage.getItem(DRAFT_KEY);
+  if(saved){
+    try { return JSON.parse(saved); } catch(e){ /* fallthrough */ }
+  }
+  // data.js から読み込んだ初期値
+  return {
+    CONFIG: {...CONFIG},
+    NEWS_CATS: {...NEWS_CATS},
+    newsData: JSON.parse(JSON.stringify(newsData)),
+    features: JSON.parse(JSON.stringify(features)),
+    grades: [...grades],
+    members: JSON.parse(JSON.stringify(members)),
+    scheduleTypes: {...scheduleTypes},
+    scheduleData: JSON.parse(JSON.stringify(scheduleData)),
+    matchData: JSON.parse(JSON.stringify(matchData)),
+    albums: JSON.parse(JSON.stringify(albums)),
+  };
+}
+function saveDraft(){
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(state));
+  const el = document.getElementById("saveIndicator");
+  el.textContent = "下書き自動保存 済み（" + new Date().toLocaleTimeString("ja-JP") + "）";
+  renderOutputPreview();
+}
+document.getElementById("resetDraftBtn")?.addEventListener("click", ()=>{
+  if(confirm("編集中の下書きをすべて破棄して、data.js の内容に戻します。よろしいですか？")){
+    localStorage.removeItem(DRAFT_KEY);
+    location.reload();
+  }
+});
+
+/* =========================================================
+   2. 汎用フィールド生成
+   ========================================================= */
+function makeField(item, f, onChange){
+  const wrap = document.createElement("label");
+  wrap.className = "field" + (f.full ? " full" : "");
+  const span = document.createElement("span");
+  span.textContent = f.label;
+  wrap.appendChild(span);
+  let input;
+  if(f.type === "textarea"){
+    input = document.createElement("textarea");
+    input.rows = f.rows || 3;
+    input.value = item[f.key] || "";
+  } else if(f.type === "select"){
+    input = document.createElement("select");
+    (f.options()||[]).forEach(o=>{
+      const opt = document.createElement("option");
+      opt.value = o; opt.textContent = o;
+      if(item[f.key] === o) opt.selected = true;
+      input.appendChild(opt);
+    });
+  } else if(f.type === "checkbox"){
+    wrap.style.display = "flex"; wrap.style.alignItems = "center"; wrap.style.gap = "8px";
+    input = document.createElement("input");
+    input.type = "checkbox";
+    input.style.width = "auto";
+    input.checked = !!item[f.key];
+    wrap.innerHTML = ""; wrap.appendChild(input); wrap.appendChild(span);
+  } else {
+    input = document.createElement("input");
+    input.type = f.type === "date" ? "date" : "text";
+    input.value = item[f.key] || "";
+  }
+  const evt = f.type === "checkbox" ? "change" : "input";
+  input.addEventListener(evt, ()=>{
+    item[f.key] = f.type === "checkbox" ? input.checked : input.value;
+    onChange();
+  });
+  wrap.appendChild(input);
+  return wrap;
+}
+
+function renderListEditor(containerEl, arr, schema, opts){
+  containerEl.innerHTML = "";
+  arr.forEach((item, idx)=>{
+    const card = document.createElement("div");
+    card.className = "admin-item-card";
+    const head = document.createElement("div");
+    head.className = "admin-item-head";
+    head.innerHTML = `<span class="idx">${opts.itemLabel ? opts.itemLabel(item, idx) : ("#" + (idx+1))}</span>`;
+    const upBtn = document.createElement("button"); upBtn.textContent = "↑"; upBtn.type="button";
+    const downBtn = document.createElement("button"); downBtn.textContent = "↓"; downBtn.type="button";
+    const delBtn = document.createElement("button"); delBtn.textContent = "削除"; delBtn.className = "del"; delBtn.type="button";
+    head.append(upBtn, downBtn, delBtn);
+    card.appendChild(head);
+
+    const fields = document.createElement("div");
+    fields.className = "admin-fields";
+    schema.forEach(f => fields.appendChild(makeField(item, f, ()=>{ saveDraft(); })));
+    card.appendChild(fields);
+    containerEl.appendChild(card);
+
+    upBtn.onclick = ()=>{ if(idx>0){ [arr[idx-1],arr[idx]] = [arr[idx],arr[idx-1]]; saveDraft(); opts.redraw(); } };
+    downBtn.onclick = ()=>{ if(idx<arr.length-1){ [arr[idx+1],arr[idx]] = [arr[idx],arr[idx+1]]; saveDraft(); opts.redraw(); } };
+    delBtn.onclick = ()=>{ if(confirm("この項目を削除しますか？")){ arr.splice(idx,1); saveDraft(); opts.redraw(); } };
+  });
+  if(arr.length === 0){
+    containerEl.innerHTML = `<p class="hint">まだ項目がありません。「＋ 追加」ボタンから作成してください。</p>`;
+  }
+}
+
+/* =========================================================
+   3. 各セクションの初期化
+   ========================================================= */
+function initAdmin(){
+  state = loadState();
+
+  // ---- ナビ切り替え ----
+  document.querySelectorAll("#adminNav button").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll("#adminNav button").forEach(b=>b.classList.remove("is-active"));
+      document.querySelectorAll(".admin-panel").forEach(p=>p.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      document.querySelector(`.admin-panel[data-panel="${btn.dataset.panel}"]`).classList.add("is-active");
+    });
+  });
+
+  // ---- 基本設定 ----
+  const configFields = [
+    {key:"teamName", label:"チーム名", type:"text", full:true},
+    {key:"instagramUrl", label:"Instagram URL", type:"text", full:true},
+    {key:"googleMapsUrl", label:"Google Maps URL", type:"text", full:true},
+    {key:"applyFormUrl", label:"見学・体験 申込フォームURL", type:"text", full:true},
+    {key:"contactFormUrl", label:"お問い合わせフォームURL", type:"text", full:true},
+    {key:"contactEmail", label:"問い合わせメールアドレス", type:"text"},
+    {key:"venueName", label:"体育館名", type:"text"},
+    {key:"venueAddress", label:"住所", type:"text", full:true},
+    {key:"joinTime", label:"活動日時（例：毎週土・日 9:00〜12:00）", type:"text", full:true},
+  ];
+  const configForm = document.getElementById("configForm");
+  configFields.forEach(f => configForm.appendChild(makeField(state.CONFIG, f, saveDraft)));
+
+  // ---- お知らせ ----
+  const newsSchema = [
+    {key:"title", label:"タイトル", type:"text", full:true},
+    {key:"date", label:"投稿日", type:"date"},
+    {key:"cat", label:"カテゴリー", type:"select", options:()=>Object.keys(state.NEWS_CATS)},
+    {key:"img", label:"画像URL（空欄で自動生成）", type:"text", full:true},
+  ];
+  function redrawNews(){
+    renderListEditor(document.getElementById("newsList"), state.newsData, newsSchema, {
+      itemLabel:(it)=> it.title || "（無題）", redraw: redrawNews,
+    });
+  }
+  document.getElementById("newsAddBtn").addEventListener("click", ()=>{
+    state.newsData.unshift({title:"", date:new Date().toISOString().slice(0,10), cat:Object.keys(state.NEWS_CATS)[0], img:""});
+    saveDraft(); redrawNews();
+  });
+  redrawNews();
+
+  // ---- 活動予定 ----
+  const scheduleSchema = [
+    {key:"date", label:"日付", type:"date"},
+    {key:"day", label:"曜日（例：日、水祝）", type:"text"},
+    {key:"type", label:"種類", type:"select", options:()=>Object.keys(state.scheduleTypes)},
+    {key:"title", label:"内容", type:"text"},
+    {key:"place", label:"場所", type:"text"},
+    {key:"note", label:"備考", type:"text"},
+  ];
+  function redrawSchedule(){
+    renderListEditor(document.getElementById("scheduleList"), state.scheduleData, scheduleSchema, {
+      itemLabel:(it)=> it.date || "（日付未設定）", redraw: redrawSchedule,
+    });
+  }
+  document.getElementById("scheduleAddBtn").addEventListener("click", ()=>{
+    state.scheduleData.push({date:new Date().toISOString().slice(0,10), day:"", type:Object.keys(state.scheduleTypes)[0], title:"", place:"", note:""});
+    saveDraft(); redrawSchedule();
+  });
+  redrawSchedule();
+
+  // ---- 大会・試合結果 ----
+  function setsToText(sets){ return (sets||[]).map(s=>`${s.round} / ${s.vs} / ${s.score}`).join("\n"); }
+  function textToSets(text){
+    return text.split("\n").map(l=>l.trim()).filter(Boolean).map(l=>{
+      const [round="",vs="",score=""] = l.split("/").map(s=>s.trim());
+      return {round, vs, score};
+    });
+  }
+  const matchSchema = [
+    {key:"name", label:"大会名", type:"text", full:true},
+    {key:"date", label:"開催日", type:"text"},
+    {key:"place", label:"開催場所", type:"text"},
+    {key:"result", label:"大会結果（例：優勝、準優勝）", type:"text"},
+    {key:"_setsText", label:"試合の内訳（1行ずつ「ラウンド / 対戦相手 / スコア」）", type:"textarea", rows:4, full:true},
+    {key:"comment", label:"コメント（子どもたちの頑張りなど）", type:"textarea", rows:3, full:true},
+  ];
+  function redrawMatch(){
+    // sets配列 <-> テキストの橋渡し用に一時プロパティを用意
+    state.matchData.forEach(m=>{ m._setsText = setsToText(m.sets); });
+    renderListEditor(document.getElementById("matchList"), state.matchData, matchSchema, {
+      itemLabel:(it)=> it.name || "（大会名未設定）", redraw: redrawMatch,
+    });
+  }
+  // _setsText の変更を sets 配列に反映する
+  document.getElementById("matchList").addEventListener("input",(e)=>{
+    if(!e.target.closest(".admin-item-card")) return;
+    const cards = [...document.querySelectorAll("#matchList .admin-item-card")];
+    const idx = cards.indexOf(e.target.closest(".admin-item-card"));
+    if(idx > -1 && state.matchData[idx]){
+      state.matchData[idx].sets = textToSets(state.matchData[idx]._setsText || "");
+    }
+  });
+  document.getElementById("matchAddBtn").addEventListener("click", ()=>{
+    state.matchData.push({name:"", date:"", place:"", sets:[], result:"", comment:"", _setsText:""});
+    saveDraft(); redrawMatch();
+  });
+  redrawMatch();
+
+  // ---- 選手紹介 ----
+  const memberSchema = [
+    {key:"name", label:"名前", type:"text"},
+    {key:"grade", label:"学年", type:"select", options:()=>state.grades},
+    {key:"number", label:"背番号", type:"text"},
+    {key:"position", label:"ポジション", type:"text"},
+    {key:"photo", label:"写真URL", type:"text", full:true},
+    {key:"isPublic", label:"公開する（保護者の同意がある選手のみ）", type:"checkbox", full:true},
+  ];
+  function redrawMember(){
+    renderListEditor(document.getElementById("memberList"), state.members, memberSchema, {
+      itemLabel:(it)=> it.name || "（名前未設定）", redraw: redrawMember,
+    });
+  }
+  document.getElementById("memberAddBtn").addEventListener("click", ()=>{
+    state.members.push({name:"", grade:state.grades[0], number:"", position:"", photo:"", isPublic:false});
+    saveDraft(); redrawMember();
+  });
+  redrawMember();
+
+  // ---- チームの特徴 ----
+  const featureSchema = [
+    {key:"icon", label:"アイコン（絵文字）", type:"text"},
+    {key:"title", label:"見出し", type:"text"},
+    {key:"text", label:"説明文", type:"textarea", rows:2, full:true},
+  ];
+  function redrawFeatures(){
+    renderListEditor(document.getElementById("featureList"), state.features, featureSchema, {
+      itemLabel:(it)=> it.title || "（無題）", redraw: redrawFeatures,
+    });
+  }
+  document.getElementById("featureAddBtn").addEventListener("click", ()=>{
+    state.features.push({icon:"🏐", title:"", text:""});
+    saveDraft(); redrawFeatures();
+  });
+  redrawFeatures();
+
+  // ---- 活動写真（アルバム） ----
+  function redrawAlbums(){
+    const container = document.getElementById("albumList");
+    container.innerHTML = "";
+    Object.keys(state.albums).forEach((albumName)=>{
+      const card = document.createElement("div");
+      card.className = "album-card";
+      const nameRow = document.createElement("div");
+      nameRow.className = "album-name-row";
+      const nameInput = document.createElement("input");
+      nameInput.value = albumName;
+      const delBtn = document.createElement("button");
+      delBtn.className = "btn btn-outline"; delBtn.style.color = "#E12420"; delBtn.style.borderColor="#f0c9c6";
+      delBtn.textContent = "アルバムを削除"; delBtn.type = "button";
+      nameRow.append(nameInput, delBtn);
+      card.appendChild(nameRow);
+
+      const urlsArea = document.createElement("textarea");
+      urlsArea.rows = 4;
+      urlsArea.placeholder = "1行に1つずつ画像URLを入力";
+      urlsArea.value = (state.albums[albumName]||[]).join("\n");
+      card.appendChild(urlsArea);
+      container.appendChild(card);
+
+      nameInput.addEventListener("change", ()=>{
+        const newName = nameInput.value.trim() || albumName;
+        if(newName !== albumName){
+          const ordered = {};
+          Object.keys(state.albums).forEach(k=>{ ordered[k === albumName ? newName : k] = state.albums[k]; });
+          state.albums = ordered;
+          saveDraft(); redrawAlbums();
+        }
+      });
+      urlsArea.addEventListener("input", ()=>{
+        state.albums[albumName] = urlsArea.value.split("\n").map(s=>s.trim()).filter(Boolean);
+        saveDraft();
+      });
+      delBtn.addEventListener("click", ()=>{
+        if(confirm(`「${albumName}」を削除しますか？`)){
+          delete state.albums[albumName];
+          saveDraft(); redrawAlbums();
+        }
+      });
+    });
+    if(Object.keys(state.albums).length === 0){
+      container.innerHTML = `<p class="hint">まだアルバムがありません。「＋ アルバムを追加」から作成してください。</p>`;
+    }
+  }
+  document.getElementById("albumAddBtn").addEventListener("click", ()=>{
+    let name = "新しいアルバム";
+    let n = 1;
+    while(state.albums[name] !== undefined){ n++; name = `新しいアルバム${n}`; }
+    state.albums[name] = [];
+    saveDraft(); redrawAlbums();
+  });
+  redrawAlbums();
+
+  // ---- 上級者向けJSON編集 ----
+  const newsCatsJson = document.getElementById("newsCatsJson");
+  newsCatsJson.value = JSON.stringify(state.NEWS_CATS, null, 2);
+  newsCatsJson.addEventListener("change", ()=>{
+    try{ state.NEWS_CATS = JSON.parse(newsCatsJson.value); saveDraft(); redrawNews(); }
+    catch(e){ alert("JSONの形式が正しくありません。変更は反映されませんでした。"); }
+  });
+  const scheduleTypesJson = document.getElementById("scheduleTypesJson");
+  scheduleTypesJson.value = JSON.stringify(state.scheduleTypes, null, 2);
+  scheduleTypesJson.addEventListener("change", ()=>{
+    try{ state.scheduleTypes = JSON.parse(scheduleTypesJson.value); saveDraft(); redrawSchedule(); }
+    catch(e){ alert("JSONの形式が正しくありません。変更は反映されませんでした。"); }
+  });
+
+  renderOutputPreview();
+}
+
+/* =========================================================
+   4. data.js の書き出し
+   ========================================================= */
+const PLACEHOLDER_FN_SRC = `function placeholderImg(seedText, c1, c2){
+  const svg = \`
+    <svg xmlns="http://www.w3.org/2000/svg" width="600" height="450">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="\${c1}"/>
+          <stop offset="1" stop-color="\${c2}"/>
+        </linearGradient>
+      </defs>
+      <rect width="600" height="450" fill="url(#g)"/>
+      <circle cx="470" cy="90" r="70" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="4"/>
+      <path d="M60 380c60-60 90-140 60-260M300 220h300" stroke="rgba(255,255,255,.18)" stroke-width="6" fill="none"/>
+      <text x="30" y="420" font-family="sans-serif" font-size="20" fill="rgba(255,255,255,.75)">\${seedText}</text>
+    </svg>\`;
+  return "data:image/svg+xml," + encodeURIComponent(svg);
+}`;
+
+function buildDataJsText(){
+  const cleanMatchData = state.matchData.map(({_setsText, ...rest}) => rest);
+  return `/* =========================================================
+   data.js
+   善通寺市ジュニアバレーボールクラブ 公式サイト コンテンツデータ
+   管理者ページ（admin.html）から書き出されたファイルです。
+   ========================================================= */
+
+const CONFIG = ${JSON.stringify(state.CONFIG, null, 2)};
+
+${PLACEHOLDER_FN_SRC}
+
+const NEWS_CATS = ${JSON.stringify(state.NEWS_CATS, null, 2)};
+const newsData = ${JSON.stringify(state.newsData, null, 2)};
+
+const features = ${JSON.stringify(state.features, null, 2)};
+
+const grades = ${JSON.stringify(state.grades, null, 2)};
+const members = ${JSON.stringify(state.members, null, 2)};
+
+const scheduleTypes = ${JSON.stringify(state.scheduleTypes, null, 2)};
+const scheduleData = ${JSON.stringify(state.scheduleData, null, 2)};
+
+const matchData = ${JSON.stringify(cleanMatchData, null, 2)};
+
+const albums = ${JSON.stringify(state.albums, null, 2)};
+`;
+}
+
+function renderOutputPreview(){
+  const el = document.getElementById("outputCode");
+  if(el && state) el.value = buildDataJsText();
+}
+
+document.getElementById("downloadBtn").addEventListener("click", ()=>{
+  const blob = new Blob([buildDataJsText()], {type:"text/javascript"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "data.js";
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("copyBtn").addEventListener("click", async ()=>{
+  try{
+    await navigator.clipboard.writeText(buildDataJsText());
+    const btn = document.getElementById("copyBtn");
+    const original = btn.textContent;
+    btn.textContent = "コピーしました！";
+    setTimeout(()=>{ btn.textContent = original; }, 1600);
+  }catch(e){
+    alert("コピーに失敗しました。プレビュー欄から手動で選択・コピーしてください。");
+  }
+});
+</script>
+</body>
+</html>
